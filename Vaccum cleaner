@@ -1,0 +1,54 @@
+def display_state(vacuum_location, rooms):
+    print("\nCurrent State:")
+    print(f"Vacuum is in Room {vacuum_location}")
+    print(f"Room states: Left = {rooms['R']} | Right = {rooms['L']}")
+
+
+def vacuum_simulation():
+    # Initial setup
+    rooms = {
+        'L': input("Is Left room dirty or clean? (Dirty/Clean): ").strip().capitalize(),
+        'R': input("Is Right room dirty or clean? (Dirty/Clean): ").strip().capitalize()
+    }
+
+    vacuum_location = input("Where should the vacuum start? (L/R): ").strip().upper()
+    if vacuum_location not in ['R', 'L']:
+        print("Invalid input. Defaulting to 'L'")
+        vacuum_location = 'L'
+
+    print("\n--- Vacuum Cleaner Simulation Started ---")
+
+    while True:
+        display_state(vacuum_location, rooms)
+
+        # Check if both rooms are clean
+        if rooms['L'] == 'Clean' and rooms['R'] == 'Clean':
+            print("✅ All rooms are clean! Job done.")
+            break
+
+        action = input("Enter action (left / right / pick / exit): ").strip().lower()
+
+        if action == 'exit':
+            print("Simulation ended by user.")
+            break
+
+        if action == 'pick':
+            if rooms[vacuum_location] == 'Dirty':
+                print(f"🧹 Picking dust in Room {vacuum_location}")
+                rooms[vacuum_location] = 'Clean'
+            else:
+                print(f"Room {vacuum_location} is already clean.")
+        elif action == 'left':
+            vacuum_location = 'L'  # Moving to right if user says left
+            print("Vacuum moves to Room R (user chose 'left')")
+        elif action == 'right':
+            vacuum_location = 'R'  # Moving to left if user says right
+            print("Vacuum moves to Room L (user chose 'right')")
+        else:
+            print("❌ Invalid action. Try again.")
+
+    print("Simulation complete.")
+
+
+if __name__ == "__main__":
+    vacuum_simulation()
