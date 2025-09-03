@@ -1,0 +1,96 @@
+from collections import deque
+
+GOAL_STATE = (1, 2, 3, 4, 5, 6, 7, 8, 0)
+
+MOVES = {
+    'UP': -3,
+    'DOWN': 3,
+    'LEFT': -1,
+    'RIGHT': 1
+}
+
+def is_valid_move(pos, move):
+    if move == 'UP' and pos < 3:
+        return False
+    if move == 'DOWN' and pos > 5:
+        return False
+    if move == 'LEFT' and pos % 3 == 0:
+        return False
+    if move == 'RIGHT' and (pos + 1) % 3 == 0:
+        return False
+    return True
+
+def move_tile(state, move):
+    new_state = list(state)
+    idx = new_state.index(0)
+    if not is_valid_move(idx, move):
+        return None
+    swap_idx = idx + MOVES[move]
+    new_state[idx], new_state[swap_idx] = new_state[swap_idx], new_state[idx]
+    return tuple(new_state)
+
+def get_successors(state):
+    successors = []
+    for move in MOVES:
+        new_state = move_tile(state, move)
+        if new_state:
+            successors.append(new_state)
+    return successors
+
+def bfs(start_state):
+    queue = deque([(start_state, [])])
+    visited = set()
+
+    while queue:
+        state, path = queue.popleft()
+        if state in visited:
+            continue
+        visited.add(state)
+
+        if state == GOAL_STATE:
+            return path + [state]
+
+        for succ in get_successors(state):
+            queue.append((succ, path + [state]))
+    
+    return None
+
+def print_path(path):
+    print("Number of steps:", len(path) - 1)
+    for state in path:
+        for i in range(0, 9, 3):
+            print(state[i:i+3])
+        print()
+
+def get_user_input():
+    print("Enter the initial 8-puzzle state row by row.")
+    print("Use digits 0-8 exactly once (0 is the blank). Example input for one row: 1 2 3")
+    user_values = []
+
+    while len(user_values) < 9:
+        try:
+            row_input = input(f"Row {len(user_values)//3 + 1}: ").strip()
+            row = list(map(int, row_input.split()))
+            if len(row) != 3:
+                print(" Please enter exactly 3 numbers.")
+                continue
+            user_values.extend(row)
+        except ValueError:
+            print(" Invalid input. Please enter numbers only.")
+
+    if sorted(user_values) != list(range(9)):
+        print("The puzzle must contain all digits from 0 to 8 exactly once.")
+        return get_user_input()
+
+    print("\n Puzzle input accepted!\n")
+    return tuple(user_values)
+
+
+if __name__ == "__main__":
+    start_state = get_user_input()
+    print("=== Solving 8-puzzle with BFS ===")
+    result = bfs(start_state)
+    if result:
+        print_path(result)
+    else:
+        print("No solution found.")
