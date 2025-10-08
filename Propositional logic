@@ -1,0 +1,51 @@
+from itertools import product
+
+# Define the propositional variables
+variables = ['P', 'Q', 'R']
+
+# Define all possible truth assignments
+assignments = list(product([True, False], repeat=len(variables)))
+
+# Function to evaluate the KB sentences
+def evaluate_KB(P, Q, R):
+    s1 = (not Q) or P       # Q -> P
+    s2 = (not P) or (not Q) # P -> ¬Q
+    s3 = Q or R             # Q ∨ R
+    KB_true = s1 and s2 and s3
+    return KB_true, s1, s2, s3
+
+# Function to evaluate a statement
+def evaluate_statement(statement, P, Q, R):
+    # statement is a lambda function
+    return statement(P, Q, R)
+
+# Statements to check entailment
+statements = {
+    "R": lambda P,Q,R: R,
+    "R -> P": lambda P,Q,R: (not R) or P,
+    "Q -> R": lambda P,Q,R: (not Q) or R
+}
+
+# Loop through all assignments
+print(f"{'P':^5}{'Q':^5}{'R':^5}{'KB':^5}{'R':^5}{'R->P':^7}{'Q->R':^7}")
+for values in assignments:
+    P, Q, R = values
+    KB_true, s1, s2, s3 = evaluate_KB(P, Q, R)
+    R_val = evaluate_statement(statements["R"], P, Q, R)
+    RtoP_val = evaluate_statement(statements["R -> P"], P, Q, R)
+    QtoR_val = evaluate_statement(statements["Q -> R"], P, Q, R)
+    
+    print(f"{P!s:^5}{Q!s:^5}{R!s:^5}{KB_true!s:^5}{R_val!s:^5}{RtoP_val!s:^7}{QtoR_val!s:^7}")
+
+# Check entailment
+def check_entailment(statement_func):
+    for values in assignments:
+        P,Q,R = values
+        KB_true, _, _, _ = evaluate_KB(P,Q,R)
+        if KB_true and not statement_func(P,Q,R):
+            return False
+    return True
+
+print("\nEntailment results:")
+for name, func in statements.items():
+    print(f"KB entails {name}? {check_entailment(func)}")
