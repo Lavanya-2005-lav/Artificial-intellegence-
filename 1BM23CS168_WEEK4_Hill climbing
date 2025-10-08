@@ -1,0 +1,55 @@
+import random
+
+def generate_board(N):
+    """Generate a random board: board[i] = row of queen in column i"""
+    return [random.randint(0, N-1) for _ in range(N)]
+
+def compute_heuristic(board):
+    """Compute number of pairs of queens attacking each other"""
+    h = 0
+    N = len(board)
+    for i in range(N):
+        for j in range(i+1, N):
+            if board[i] == board[j]:            # same row
+                h += 1
+            elif abs(board[i] - board[j]) == j - i:  # same diagonal
+                h += 1
+    return h
+
+def get_neighbors(board):
+    """Generate all neighbors by moving one queen in its column"""
+    neighbors = []
+    N = len(board)
+    for col in range(N):
+        for row in range(N):
+            if board[col] != row:
+                new_board = list(board)
+                new_board[col] = row
+                neighbors.append(new_board)
+    return neighbors
+
+def hill_climbing(N, max_restarts=100):
+    for restart in range(max_restarts):
+        board = generate_board(N)
+        steps = 0
+        while True:
+            h = compute_heuristic(board)
+            if h == 0:
+                print(f"Solution found in {steps} steps after {restart} restarts!")
+                return board
+            neighbors = get_neighbors(board)
+            h_values = [compute_heuristic(nb) for nb in neighbors]
+            min_h = min(h_values)
+            if min_h >= h:  # no improvement
+                break       # local maxima, do random restart
+            # move to the neighbor with minimum heuristic
+            board = neighbors[h_values.index(min_h)]
+            steps += 1
+    print("No solution found")
+    return None
+
+# Example usage
+N = 8
+solution = hill_climbing(N)
+if solution:
+    print("Board (column: row):", solution)
