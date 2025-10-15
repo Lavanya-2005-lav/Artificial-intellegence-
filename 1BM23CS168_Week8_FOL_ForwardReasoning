@@ -1,0 +1,34 @@
+# Facts as tuples (Predicate, Arguments)
+facts = [
+    ('American', 'Robert'),
+    ('Enemy', 'CountryA', 'America'),
+    ('Sells', 'Robert', 'Missile1', 'CountryA'),
+    ('Sells', 'Robert', 'Missile2', 'CountryA')
+]
+
+# Rule: American sells weapons to hostile nation -> Criminal
+def infer_criminal(facts):
+    new_facts = []
+    for fact in facts:
+        if fact[0] == 'American':
+            person = fact[1]
+            for sell in facts:
+                if sell[0] == 'Sells' and sell[1] == person:
+                    weapon, country = sell[2], sell[3]
+                    for enemy in facts:
+                        if enemy[0] == 'Enemy' and enemy[1] == country and enemy[2] == 'America':
+                            criminal_fact = ('Criminal', person)
+                            if criminal_fact not in facts and criminal_fact not in new_facts:
+                                new_facts.append(criminal_fact)
+    return new_facts
+
+# Forward chaining
+while True:
+    new_facts = infer_criminal(facts)
+    if not new_facts:
+        break
+    facts.extend(new_facts)
+
+# Result
+for f in facts:
+    print(f)
