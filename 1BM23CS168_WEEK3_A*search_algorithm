@@ -1,0 +1,66 @@
+# A* Search Algorithm Implementation in Python
+
+from queue import PriorityQueue
+
+def a_star_search(graph, heuristic, start, goal):
+    # Priority queue to store (f_score, node, path)
+    pq = PriorityQueue()
+    pq.put((0, start, [start]))
+
+    # Dictionary to store g_scores (cost from start)
+    g_score = {node: float('inf') for node in graph}
+    g_score[start] = 0
+
+    while not pq.empty():
+        f, current, path = pq.get()
+
+        # Goal check
+        if current == goal:
+            print("Path found:", ' → '.join(path))
+            print("Total cost:", g_score[goal])
+            return
+
+        # Explore neighbors
+        for neighbor, cost in graph[current]:
+            tentative_g = g_score[current] + cost
+
+            if tentative_g < g_score[neighbor]:
+                g_score[neighbor] = tentative_g
+                f_score = tentative_g + heuristic[neighbor]
+                pq.put((f_score, neighbor, path + [neighbor]))
+
+    print("No path found!")
+
+# Example usage
+if __name__ == "__main__":
+    # Define the graph as adjacency list
+    # Each node: [(neighbor, cost), ...]
+    graph = {
+        'A': [('B', 1), ('C', 3)],
+        'B': [('D', 1), ('E', 5)],
+        'C': [('F', 2)],
+        'D': [('G', 3)],
+        'E': [('G', 1)],
+        'F': [('G', 5)],
+        'G': []
+    }
+
+    # Define heuristic values (estimated cost to reach goal)
+    heuristic = {
+        'A': 7,
+        'B': 6,
+        'C': 5,
+        'D': 4,
+        'E': 2,
+        'F': 1,
+        'G': 0
+    }
+
+    start_node = 'A'
+    goal_node = 'G'
+
+    print("A* Search Algorithm")
+    print("--------------------")
+    print(f"Finding path from {start_node} → {goal_node}\n")
+
+    a_star_search(graph, heuristic, start_node, goal_node)
