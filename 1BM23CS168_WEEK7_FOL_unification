@@ -1,0 +1,94 @@
+# -------------------------------
+# Unification Algorithm in First-Order Logic
+# -------------------------------
+
+class Term:
+    def __init__(self, name, args=None):
+        self.name = name
+        self.args = args or []
+
+    def is_variable(self):
+        return self.args == [] and self.name[0].isupper()
+
+    def is_constant(self):
+        return self.args == [] and self.name[0].islower()
+
+    def __repr__(self):
+        if not self.args:
+            return self.name
+        else:
+            return f"{self.name}({', '.join(map(str, self.args))})"
+
+
+# Occurs check: prevents infinite recursion like X = f(X)
+def occurs_check(var, term, subs):
+    if var == term:
+        return True
+    elif term.is_variable() and term.name in subs:
+        return occurs_check(var, subs[term.name], subs)
+    elif term.args:
+        return any(occurs_check(var, t, subs) for t in term.args)
+    return False
+
+
+# Apply substitution to a term
+def apply(subs, term):
+    if term.is_variable() and term.name in subs:
+        return apply(subs, subs[term.name])
+    elif term.args:
+        return Term(term.name, [apply(subs, t) for t in term.args])
+    else:
+        return term
+
+
+# Unification function
+def unify(x, y, subs=None):
+    if subs is None:
+        subs = {}
+
+    x = apply(subs, x)
+    y = apply(subs, y)
+
+    if x == y:
+        return subs
+    elif x.is_variable():
+        if occurs_check(x, y, subs):
+            return None
+        subs[x.name] = y
+        return subs
+    elif y.is_variable():
+        if occurs_check(y, x, subs):
+            return None
+        subs[y.name] = x
+        return subs
+    elif x.name == y.name and len(x.args) == len(y.args):
+        for a, b in zip(x.args, y.args):
+            subs = unify(a, b, subs)
+            if subs is None:
+                return None
+        return subs
+    else:
+        return None
+
+
+# -------- Example Test Cases --------
+
+if __name__ == "__main__":
+    tests = [
+        ("Unify X with a", Term("X"), Term("a")),
+        ("Unify f(X,b) with f(a,Y)", Term("f", [Term("X"), Term("b")]), Term("f", [Term("a"), Term("Y")])),
+        ("Unify f(X) with X (occurs check fail)", Term("f", [Term("X")]), Term("X")),
+        ("Unify g(X,h(Y)) with g(h(Z),h(a))", Term("g", [Term("X"), Term("h", [Term("Y")])]), Term("g", [Term("h", [Term("Z")]), Term("h", [Term("a")])])),
+        ("Unify p(X,X) with p(a,b) (should fail)", Term("p", [Term("X"), Term("X")]), Term("p", [Term("a"), Term("b")])),
+    ]
+
+    for desc, t1, t2 in tests:
+        print("Test:", desc)
+        result = unify(t1, t2)
+        if result is None:
+            print("  ❌ Unification failed")
+        else:
+            print("  ✅ Substitution:")
+            for k, v in result.items():
+                print(f"     {k} -> {v}")
+        print()
