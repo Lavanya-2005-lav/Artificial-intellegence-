@@ -1,0 +1,65 @@
+# Resolution Proof for "John likes peanuts"
+
+# Facts and rules (simulated as Python logic)
+def proof():
+    # Premises
+    john_likes_food = lambda y: food(y)  # John likes all kinds of food if it's food
+    eats = {
+        ('anil', 'peanuts'): True,
+    }
+    alive = {
+        'anil': True
+    }
+
+    # Rules
+    def is_food(y):
+        # Apple and vegetables are food
+        if y in ['apple', 'vegetables']:
+            return True
+        # Rule: Anything anyone eats and not killed is food
+        for (x, item) in eats:
+            if item == y and not killed(x):
+                return True
+        return False
+
+    def killed(x):
+        # If alive(x) then not killed(x)
+        if alive.get(x, False):
+            return False
+        # If not alive(x) then possibly killed(x)
+        return True
+
+    def food(y):
+        return is_food(y)
+
+    # Negated goal: assume John does NOT like peanuts
+    goal = "¬likes(john,peanuts)"
+    print(f"Assume negated goal: {goal}")
+
+    # Step 1: Anil eats peanuts and is alive
+    print("1. eats(anil, peanuts) is True")
+    print("2. alive(anil) is True")
+
+    # Step 2: From 'alive(anil)' => 'not killed(anil)'
+    not_killed_anil = not killed('anil')
+    print(f"3. From alive(anil), we infer not killed(anil): {not_killed_anil}")
+
+    # Step 3: From 'Anil eats peanuts' and 'not killed(anil)' => 'food(peanuts)'
+    food_peanuts = eats[('anil', 'peanuts')] and not_killed_anil
+    print(f"4. From eats(anil,peanuts) and not killed(anil), we infer food(peanuts): {food_peanuts}")
+
+    # Step 4: From 'food(peanuts)' => 'John likes peanuts'
+    if food_peanuts:
+        likes_john_peanuts = True
+    else:
+        likes_john_peanuts = False
+    print(f"5. From food(peanuts), John likes peanuts: {likes_john_peanuts}")
+
+    # Step 5: Contradiction with negated goal
+    if likes_john_peanuts:
+        print("6. Contradiction with negated goal ¬likes(john,peanuts).")
+        print("✅ Therefore, John likes peanuts is PROVED by resolution.")
+    else:
+        print("❌ Could not prove John likes peanuts.")
+
+proof()
